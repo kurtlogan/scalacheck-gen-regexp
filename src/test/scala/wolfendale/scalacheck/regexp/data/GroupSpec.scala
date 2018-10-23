@@ -1,16 +1,16 @@
 package wolfendale.scalacheck.regexp.data
 
-import org.scalacheck.{Gen, Shrink}
+import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{MustMatchers, WordSpec}
-import wolfendale.scalacheck.regexp.data.SetGroup._
+import wolfendale.scalacheck.regexp.data.Group._
 
 object Iso extends MustMatchers {
-  implicit class IsoOps[A](val left: SetGroup[A]) extends AnyVal {
-    def mustBeIsoTo(right: SetGroup[A]): Unit =
+  implicit class IsoOps[A](val left: Group[A]) extends AnyVal {
+    def mustBeIsoTo(right: Group[A]): Unit =
       values(left) mustBe values(right)
 
-    private def values(set: SetGroup[A]): Set[A] =
+    private def values(set: Group[A]): Set[A] =
       set match {
         case Inclusion(values) => values
         case Exclusion(values) => values
@@ -18,7 +18,7 @@ object Iso extends MustMatchers {
   }
 }
 
-class SetGroupSpec extends WordSpec with MustMatchers with PropertyChecks {
+class GroupSpec extends WordSpec with MustMatchers with PropertyChecks {
 
   import Iso._
 

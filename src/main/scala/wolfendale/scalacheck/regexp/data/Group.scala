@@ -1,64 +1,58 @@
 package wolfendale.scalacheck.regexp.data
 
-sealed abstract class SetGroup[A] {
+sealed abstract class Group[A] {
 
-  type C
+  def compliment: Group[A]
 
-  def compliment: C
+  def intersect(that: Group[A]): Group[A]
 
-  def intersect(that: SetGroup[A]): SetGroup[A]
+  def ++(that: Group[A]): Group[A]
 
-  def ++(that: SetGroup[A]): SetGroup[A]
-
-  def --(that: SetGroup[A]): SetGroup[A]
+  def --(that: Group[A]): Group[A]
 }
 
-object SetGroup {
+object Group {
 
-  final case class Inclusion[A](values: Set[A]) extends SetGroup[A] {
+  final case class Inclusion[A](values: Set[A]) extends Group[A] {
 
-    type C = Exclusion[A]
+    override lazy val compliment: Group[A] = Exclusion(values)
 
-    override lazy val compliment: Exclusion[A] = Exclusion(values)
-
-    override def intersect(that: SetGroup[A]): SetGroup[A] =
+    override def intersect(that: Group[A]): Group[A] =
       that match {
         case Inclusion(other) => Inclusion(values.intersect(other))
         case Exclusion(other) => Inclusion(values -- other)
       }
 
-    override def ++(that: SetGroup[A]): SetGroup[A] =
+    override def ++(that: Group[A]): Group[A] =
       that match {
         case Inclusion(other) => Inclusion(values ++ other)
         case Exclusion(other) => Exclusion(other -- values)
       }
 
-    override def --(that: SetGroup[A]): SetGroup[A] =
+    override def --(that: Group[A]): Group[A] =
       that match {
         case Inclusion(other) => Inclusion(values -- other)
         case Exclusion(other) => Inclusion(values.intersect(other))
       }
   }
 
-  final case class Exclusion[A](values: Set[A]) extends SetGroup[A] {
+  final case class Exclusion[A](values: Set[A]) extends Group[A] {
 
-    type C = Inclusion[A]
+    override lazy val compliment: Group[A] = Inclusion(values)
 
-    override lazy val compliment: Inclusion[A] = Inclusion(values)
-
-    override def intersect(that: SetGroup[A]): SetGroup[A] =
+    override def intersect(that: Group[A]): Group[A] =
       that match {
         case Inclusion(other) => Inclusion(values -- other)
         case Exclusion(other) => Exclusion(values ++ other)
       }
 
-    override def ++(that: SetGroup[A]): SetGroup[A] =
+    override def ++(that: Group[A]): Group[A] =
       that match {
         case Inclusion(other) => Exclusion(values -- other)
         case Exclusion(other) => Exclusion(values.intersect(other))
       }
 
-    override def --(that: SetGroup[A]): SetGroup[A] =
+    override def --(that: Group[A]): Group[A] =
       that match {
         case Exclusion(other) => Exclusion(other -- values)
         case Inclusion(other) => Exclusion(values ++ other)
